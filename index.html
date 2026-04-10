@@ -234,20 +234,27 @@
             }
 
             load(inputString) {
-                // Validate and format input
-                const cleanStr = inputString.replace(/[^1-]/g, '');
-                if (!cleanStr.includes('-')) {
-                    alert("Invalid input! Must contain a minus sign (e.g., 111-1)");
+                // 1. Check if user entered non-unary characters
+                if (/[^1-]/.test(inputString)) {
+                    alert("⚠️ Unary Format Required ⚠️\n\nTuring Machines compute math using Unary formatting, not binary or decimal.\n\nTo represent the number 5, type five ones (11111). To subtract 2 from 5, type '11111-11'.\n\nPlease use only '1's and a single '-' sign.");
+                    return;
+                }
+
+                // 2. Check for missing minus sign
+                if (!inputString.includes('-')) {
+                    alert("Invalid input! Must contain a minus sign (e.g., 111-11)");
                     return;
                 }
                 
-                const parts = cleanStr.split('-');
+                // 3. Count the ones to show the decimal evaluation
+                const parts = inputString.split('-');
                 const m = parts[0].length;
                 const n = parts[1] ? parts[1].length : 0;
                 document.getElementById('math-display').innerText = `Evaluating: ${m} ∸ ${n}`;
 
+                // 4. Load the tape
                 const padding = Array(5).fill('_');
-                this.tape = [...padding, ...cleanStr.split(''), ...padding];
+                this.tape = [...padding, ...inputString.split(''), ...padding];
                 
                 this.head = 5; 
                 this.state = 'q0';
