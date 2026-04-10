@@ -49,11 +49,8 @@ The simulator processes an input tape formatted as `[m ones] - [n ones]` (e.g., 
 
 ---
 
-## 💻 Local Setup & Deployment
+## 💻 Local Setup
 
 **To run locally:**
 1. Clone this repository.
 2. Open `index.html` in any modern web browser (no build tools or dependencies required).
-
-**Vercel Deployment:**
-This project is configured as a Static Site via `vercel.json` for edge-network deployment, ensuring zero-latency interactions during grading.
