@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turing Machine: Monus Function</title>
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --panel-bg: #18181b;
+            --text-main: #f4f4f5;
+            --neon-blue: #06b6d4;
+            --neon-purple: #a855f7;
+            --neon-green: #22c55e;
+            --neon-red: #ef4444;
+            --tape-bg: #27272a;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--neon-purple);
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #3f3f46;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input {
+            padding: 10px;
+            border: 2px solid var(--tape-bg);
+            border-radius: 6px;
+            background: var(--bg-color);
+            color: white;
+            font-size: 16px;
+            width: 150px;
+            outline: none;
+            transition: border-color 0.3s;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        input:focus { border-color: var(--neon-blue); }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--tape-bg);
+            color: white;
+            text-transform: uppercase;
+        }
+
+        button:hover { filter: brightness(1.2); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #btn-load { background-color: var(--neon-blue); color: #000; }
+        #btn-step { background-color: var(--neon-purple); color: #fff; }
+        #btn-play { background-color: var(--neon-green); color: #000; }
+
+        .status-board {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .state-badge {
+            display: inline-block;
+            padding: 5px 20px;
+            background: var(--tape-bg);
+            border-radius: 20px;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin: 5px;
+        }
+
+        .tape-container {
+            display: flex;
+            gap: 8px;
+            padding: 30px 20px;
+            background-color: var(--panel-bg);
+            border-radius: 12px;
+            border: 1px solid #3f3f46;
+            overflow-x: auto;
+            max-width: 90vw;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .tape-cell {
+            min-width: 50px;
+            height: 60px;
+            background-color: var(--tape-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 26px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.15s ease-out;
+            color: #e4e4e7;
+        }
+
+        .tape-cell.active {
+            border-color: var(--neon-purple);
+            background-color: rgba(168, 85, 247, 0.2);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+            transform: scale(1.15) translateY(-5px);
+            z-index: 10;
+        }
+
+        .tape-cell.blank { color: #52525b; }
+        .tape-cell.minus { color: var(--neon-red); }
+
+        #result {
+            margin-top: 30px;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px currentColor;
+        }
+        
+        .math-display {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #a1a1aa;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Theory of Computation</h1>
+    <div class="subtitle">Monus Function (m ∸ n) Turing Machine</div>
+
+    <div class="controls">
+        <div class="input-group">
+            <span style="color: #a1a1aa;">Input:</span>
+            <input type="text" id="input-string" value="11111-11" title="Format: [m ones]-[n ones]">
+        </div>
+        <button id="btn-load">Load Tape</button>
+        <button id="btn-step" disabled>Step</button>
+        <button id="btn-play" disabled>Auto Play</button>
+        <button id="btn-reset">Reset</button>
+    </div>
+
+    <div class="status-board">
+        <div>Current State: <span class="state-badge" id="current-state">q0</span></div>
+        <div id="action-text" style="margin-top: 10px; color: #a1a1aa;">Ready to compute.</div>
+        <div class="math-display" id="math-display">Evaluating: 5 - 2</div>
+    </div>
+
+    <div class="tape-container" id="tape"></div>
+    <div id="result"></div>
+
+    <script>
+        class MonusTuringMachine {
+            constructor() {
+                this.tape = [];
+                this.head = 0;
+                this.state = 'q0';
+                this.status = 'Ready';
+                
+                // Formal Transition Function for Monus (m - n)
+                this.transitions = {
+                    'q0': { // Find a 1 in 'm' to erase
+                        '1': { write: '_', move: 'R', nextState: 'q1', log: "Erased one '1' from m. Shuttling right." },
+                        '-': { write: '_', move: 'R', nextState: 'q5', log: "m is empty but we hit '-'. This means m <= n. Result is 0. Erasing rest." },
+                        '_': { write: '_', move: 'R', nextState: 'q_accept', log: "Tape is empty." }
+                    },
+                    'q1': { // Shuttle right to the minus sign
+                        '1': { write: '1', move: 'R', nextState: 'q1', log: "Shuttling right through m..." },
+                        '-': { write: '-', move: 'R', nextState: 'q2', log: "Found minus sign. Moving to n." }
+                    },
+                    'q2': { // Shuttle right to the end of 'n'
+                        '1': { write: '1', move: 'R', nextState: 'q2', log: "Shuttling right through n..." },
+                        '_': { write: '_', move: 'L', nextState: 'q3', log: "Found end of tape. Stepping left to erase one '1' from n." }
+                    },
+                    'q3': { // Erase one '1' from 'n'
+                        '1': { write: '_', move: 'L', nextState: 'q4', log: "Erased rightmost '1' from n. Returning left." },
+                        '-': { write: '1', move: 'L', nextState: 'q_accept', log: "n is completely empty! Replaced '-' with '1' to restore m. Halting." }
+                    },
+                    'q4': { // Shuttle left all the way back to start
+                        '1': { write: '1', move: 'L', nextState: 'q4', log: "Shuttling left..." },
+                        '-': { write: '-', move: 'L', nextState: 'q4', log: "Shuttling left past minus sign..." },
+                        '_': { write: '_', move: 'R', nextState: 'q0', log: "Found start of string. Looping back to q0." }
+                    },
+                    'q5': { // Cleanup phase (if m <= n, result must be 0)
+                        '1': { write: '_', move: 'R', nextState: 'q5', log: "Erasing remaining n to output 0..." },
+                        '_': { write: '_', move: 'L', nextState: 'q_accept', log: "Cleanup complete. Halting with 0." }
+                    }
+                };
+            }
+
+            load(inputString) {
+                // Validate and format input
+                const cleanStr = inputString.replace(/[^1-]/g, '');
+                if (!cleanStr.includes('-')) {
+                    alert("Invalid input! Must contain a minus sign (e.g., 111-1)");
+                    return;
+                }
+                
+                const parts = cleanStr.split('-');
+                const m = parts[0].length;
+                const n = parts[1] ? parts[1].length : 0;
+                document.getElementById('math-display').innerText = `Evaluating: ${m} ∸ ${n}`;
+
+                const padding = Array(5).fill('_');
+                this.tape = [...padding, ...cleanStr.split(''), ...padding];
+                
+                this.head = 5; 
+                this.state = 'q0';
+                this.status = 'Ready';
+                this.log = "Tape loaded. Waiting to start.";
+            }
+
+            step() {
+                if (this.status === 'Accept') return false;
+
+                this.status = 'Running';
+                const currentSymbol = this.tape[this.head] || '_';
+                const stateTransitions = this.transitions[this.state];
+                
+                if (!stateTransitions || !stateTransitions[currentSymbol]) {
+                    this.status = 'Reject';
+                    this.log = `CRASH: No transition for State ${this.state} reading '${currentSymbol}'.`;
+                    this.state = 'q_reject';
+                    return false;
+                }
+
+                const action = stateTransitions[currentSymbol];
+                
+                this.tape[this.head] = action.write;
+                if (action.move === 'R') this.head++;
+                else if (action.move === 'L') this.head--;
+                
+                this.state = action.nextState;
+                this.log = action.log;
+
+                // Expand tape infinitely
+                if (this.head < 0) {
+                    this.tape.unshift('_');
+                    this.head = 0;
+                } else if (this.head >= this.tape.length) {
+                    this.tape.push('_');
+                }
+
+                if (this.state === 'q_accept') this.status = 'Accept';
+                return true;
+            }
+
+            getResult() {
+                // Count remaining 1s on tape for final answer
+                return this.tape.filter(s => s === '1').length;
+            }
+        }
+
+        // --- UI Controller ---
+        const tm = new MonusTuringMachine();
+        let playInterval = null;
+
+        const uiTape = document.getElementById('tape');
+        const uiState = document.getElementById('current-state');
+        const uiAction = document.getElementById('action-text');
+        const uiResult = document.getElementById('result');
+        const inputStr = document.getElementById('input-string');
+
+        function renderTape() {
+            uiTape.innerHTML = '';
+            tm.tape.forEach((symbol, index) => {
+                const cell = document.createElement('div');
+                let classes = 'tape-cell ';
+                if (symbol === '_') classes += 'blank ';
+                if (symbol === '-') classes += 'minus ';
+                if (index === tm.head) classes += 'active ';
+                
+                cell.className = classes;
+                cell.innerText = symbol;
+                
+                if (index === tm.head) {
+                    setTimeout(() => cell.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }), 50);
+                }
+                uiTape.appendChild(cell);
+            });
+
+            uiState.innerText = tm.state;
+            uiAction.innerText = tm.log;
+
+            if (tm.status === 'Accept') {
+                const finalAnswer = tm.getResult();
+                uiResult.innerText = `HALT: ACCEPTED (Result = ${finalAnswer})`;
+                uiResult.style.color = "var(--neon-green)";
+                stopAutoPlay();
+            } else if (tm.status === 'Reject') {
+                uiResult.innerText = "HALT: REJECTED (CRASH)";
+                uiResult.style.color = "var(--neon-red)";
+                stopAutoPlay();
+            } else {
+                uiResult.innerText = "";
+            }
+        }
+
+        function loadMachine() {
+            stopAutoPlay();
+            tm.load(inputStr.value);
+            renderTape();
+            document.getElementById('btn-step').disabled = false;
+            document.getElementById('btn-play').disabled = false;
+        }
+
+        function stopAutoPlay() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                document.getElementById('btn-play').innerText = "Auto Play";
+            }
+        }
+
+        document.getElementById('btn-load').addEventListener('click', loadMachine);
+        document.getElementById('btn-reset').addEventListener('click', loadMachine);
+
+        document.getElementById('btn-step').addEventListener('click', () => {
+            tm.step();
+            renderTape();
+        });
+
+        document.getElementById('btn-play').addEventListener('click', (e) => {
+            if (playInterval) {
+                stopAutoPlay();
+            } else {
+                e.target.innerText = "Pause";
+                playInterval = setInterval(() => {
+                    if (tm.status === 'Accept' || tm.status === 'Reject') {
+                        stopAutoPlay();
+                    } else {
+                        tm.step();
+                        renderTape();
+                    }
+                }, 300); // 300ms speed
+            }
+        });
+
+        // Initialize
+        loadMachine();
+    </script>
+</body>
+</html>
