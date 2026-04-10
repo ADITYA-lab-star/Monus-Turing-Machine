@@ -1,8 +1,6 @@
 # 📠 Theory of Computation: Monus Function Turing Machine
 
-**Subject:** Theory of Computation (Unit 5: Turing Machines)  
-**Submission Deadline:** 20 April, 2026  
-**Live Deployment:** [Insert Your Vercel URL Here]
+**Subject:** Theory of Computation (Unit 5: Turing Machines)
 
 ---
 
